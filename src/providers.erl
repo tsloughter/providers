@@ -30,8 +30,8 @@
 
 -type provider_name() :: atom().
 
--callback init(rebar_state:t()) -> {ok, rebar_state:t()}.
--callback do(rebar_state:t()) ->  {ok, rebar_state:t()} | {error, string()}.
+-callback init(any()) -> {ok, any()}.
+-callback do(any()) ->  {ok, any()} | {error, string()}.
 
 %%%===================================================================
 %%% API
@@ -160,7 +160,7 @@ process_dep(ProviderName, {Deps, Providers, Seen}) ->
 
 %% @doc Reorder the providers according to thier dependency set.
 reorder_providers(OProviderList) ->
-    case rebar_topo:sort(OProviderList) of
+    case providers_topo:sort(OProviderList) of
         {ok, ProviderList} ->
             ProviderList;
         {error, {cycle, _}} ->
