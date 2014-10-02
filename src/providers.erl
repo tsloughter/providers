@@ -55,7 +55,7 @@ new(ModuleName, State) when is_atom(ModuleName) ->
 create(Attrs) ->
     #provider{ name          = proplists:get_value(name, Attrs, undefined)
              , provider_impl = proplists:get_value(provider_impl, Attrs, undefined)
-             , hooks         = proplists:get_value(hooks, Attrs, undefined)
+             , hooks         = proplists:get_value(hooks, Attrs, {[], []})
              , bare          = proplists:get_value(bare, Attrs, false)
              , deps          = proplists:get_value(deps, Attrs, [])
              , desc          = proplists:get_value(desc, Attrs, "")
