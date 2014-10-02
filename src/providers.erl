@@ -17,9 +17,9 @@
 %%%===================================================================
 
 -record(provider,  { name          :: atom(),               % The 'user friendly' name of the task
-                     provider_impl :: atom(),               % The implementation of the task, maybe fun or
+                     provider_impl :: module(),             % The module implementation of the task
                      hooks         :: {list(), list()},
-                     bare          :: boolean(),            % Indicates whether a build config is needed
+                     bare          :: boolean(),            % Indicates whether task can be run by user
                      deps          :: [atom()],             % The list of dependencies
                      desc          :: string(),             % The description for the task
                      short_desc    :: string(),             % A one line short description of the task
