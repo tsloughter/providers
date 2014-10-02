@@ -28,11 +28,6 @@
 
 -type t() :: record(provider).
 
--type provider_name() :: atom().
-
--callback init(any()) -> {ok, any()}.
--callback do(any()) ->  {ok, any()} | {error, string()}.
-
 %%%===================================================================
 %%% API
 %%%===================================================================
@@ -67,7 +62,7 @@ create(Attrs) ->
 %%
 %% @param Provider the provider object
 %% @param State the current state of the system
--spec do(Provider::t(), any()) -> {ok, any()} | {error, string()}.
+-spec do(t(), any()) -> {ok, any()} | {error, string()}.
 do(Provider, State) ->
     {PreHooks, PostHooks} = Provider#provider.hooks,
     run_all([PreHooks++Provider | PostHooks], State).
@@ -85,7 +80,7 @@ run_all([Provider | Rest], State) ->
 
 %%% @doc get the name of the module that implements the provider
 %%% @param Provider the provider object
--spec impl(Provider::t()) -> module().
+-spec impl(t()) -> module().
 impl(Provider) ->
     Provider#provider.name.
 
@@ -117,7 +112,7 @@ get_target_providers(Target, Providers) ->
                                    end, Providers),
     process_deps(TargetProviders, Providers).
 
--spec get_provider(provider_name(), [t()]) -> t().
+-spec get_provider(atom(), [t()]) -> t().
 get_provider(ProviderName, [Provider = #provider{name = ProviderName} | _]) ->
     Provider;
 get_provider(ProviderName, [_ | Rest]) ->
