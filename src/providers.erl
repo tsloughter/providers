@@ -17,7 +17,7 @@
 %%%===================================================================
 
 -record(provider,  { name          :: atom(),               % The 'user friendly' name of the task
-                     provider_impl :: module(),             % The module implementation of the task
+                     module        :: module(),             % The module implementation of the task
                      hooks         :: {list(), list()},
                      bare          :: boolean(),            % Indicates whether task can be run by user
                      deps          :: [atom()],             % The list of dependencies
@@ -49,7 +49,7 @@ new(ModuleName, State) when is_atom(ModuleName) ->
 -spec create(list()) -> t().
 create(Attrs) ->
     #provider{ name          = proplists:get_value(name, Attrs, undefined)
-             , provider_impl = proplists:get_value(provider_impl, Attrs, undefined)
+             , module        = proplists:get_value(module, Attrs, undefined)
              , hooks         = proplists:get_value(hooks, Attrs, {[], []})
              , bare          = proplists:get_value(bare, Attrs, false)
              , deps          = proplists:get_value(deps, Attrs, [])
@@ -71,7 +71,7 @@ do(Provider, State) ->
 run_all([], State) ->
     {ok, State};
 run_all([Provider | Rest], State) ->
-    case (Provider#provider.provider_impl):do(State) of
+    case (Provider#provider.module):do(State) of
         {ok, State1} ->
             run_all(Rest, State1);
         {error, Error} ->
