@@ -7,6 +7,8 @@
          impl/1,
          get_provider/2,
          get_target_providers/2,
+         hooks/1,
+         hooks/2,
          help/1,
          format/1]).
 
@@ -83,6 +85,14 @@ run_all([Provider | Rest], State) ->
 -spec impl(t()) -> module().
 impl(Provider) ->
     Provider#provider.name.
+
+-spec hooks(t()) -> {[t()], [t()]}.
+hooks(Provider) ->
+    Provider#provider.hooks.
+
+-spec hooks(t(), {[t()], [t()]}) -> t().
+hooks(Provider, Hooks) ->
+    Provider#provider{hooks=Hooks}.
 
 help(Providers) ->
     Help = lists:sort([{ec_cnv:to_list(P#provider.name), P#provider.short_desc} || P <- Providers,
