@@ -6,6 +6,7 @@
          do/2,
          impl/1,
          get_provider/2,
+         get_provider_by_module/2,
          get_target_providers/2,
          hooks/1,
          hooks/2,
@@ -133,6 +134,14 @@ get_provider(ProviderName, [Provider = #provider{name = ProviderName} | _]) ->
 get_provider(ProviderName, [_ | Rest]) ->
     get_provider(ProviderName, Rest);
 get_provider(_ProviderName, _) ->
+    [].
+
+-spec get_provider_by_module(atom(), [t()]) -> t().
+get_provider_by_module(ProviderModule, [Provider = #provider{module = ProviderModule} | _]) ->
+    Provider;
+get_provider_by_module(ProviderModule, [_ | Rest]) ->
+    get_provider_by_module(ProviderModule, Rest);
+get_provider_by_module(_ProviderModule, _) ->
     [].
 
 process_deps([], _Providers) ->
