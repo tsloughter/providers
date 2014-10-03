@@ -10,6 +10,7 @@
          hooks/1,
          hooks/2,
          help/1,
+         format_error/2,
          format/1]).
 
 -export_type([t/0]).
@@ -105,6 +106,10 @@ help(Providers) ->
                           io:format("~s~s~s~n", [Name, Spacing, ShortDesc])
                   end, Help).
 
+%% @doc format an error produced from a provider.
+-spec format_error(t(), Reason::term()) -> iolist().
+format_error(#provider{module=Mod}, Error) ->
+    Mod:format_error(Error).
 
 %% @doc print the provider module name
 %%
