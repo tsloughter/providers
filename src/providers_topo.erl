@@ -63,7 +63,7 @@ iterate([], L, All) ->
 iterate(Pairs, L, All) ->
     case subtract(lhs(Pairs), rhs(Pairs)) of
         []  ->
-            {error, io_lib:format("Cycle found in providers dependencies.")};
+            {error, "Cycle found in providers dependencies."};
         Lhs ->
             iterate(remove_pairs(Lhs, Pairs), L ++ Lhs, All)
     end.
