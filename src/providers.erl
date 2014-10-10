@@ -5,6 +5,8 @@
          new/2,
          do/2,
          impl/1,
+         opts/1,
+         desc/1,
          process_deps/2,
          get_provider/2,
          get_provider_by_module/2,
@@ -88,6 +90,14 @@ run_all([Provider | Rest], State) ->
 -spec impl(t()) -> module().
 impl(Provider) ->
     Provider#provider.name.
+
+-spec opts(t()) -> list().
+opts(Provider) ->
+    Provider#provider.opts.
+
+-spec desc(t()) -> string().
+desc(Provider) ->
+    Provider#provider.desc.
 
 -spec hooks(t()) -> {[t()], [t()]}.
 hooks(Provider) ->
