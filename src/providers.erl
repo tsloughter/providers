@@ -14,6 +14,7 @@
          hooks/1,
          hooks/2,
          help/1,
+         help/2,
          format_error/2,
          format/1]).
 
@@ -107,7 +108,7 @@ hooks(Provider) ->
 hooks(Provider, Hooks) ->
     Provider#provider{hooks=Hooks}.
 
-help(Providers) ->
+help(Providers) when is_list(Providers) ->
     Help = lists:sort([{ec_cnv:to_list(P#provider.name), P#provider.short_desc} || P <- Providers,
                                                                                    P#provider.bare =/= true]),
     Longest = lists:max([length(X) || {X, _} <- Help]),
@@ -116,7 +117,23 @@ help(Providers) ->
                           Length = length(Name),
                           Spacing = lists:duplicate(Longest - Length + 8, " "),
                           io:format("~s~s~s~n", [Name, Spacing, ShortDesc])
-                  end, Help).
+                  end, Help);
+help(#provider{opts=Opts
+              ,desc=Desc
+              ,name=Name}) ->
+    case Desc of
+        Desc when length(Desc) > 0 ->
+            io:format(Desc++"~n~n");
+        _ ->
+            ok
+    end,
+    getopt:usage(Opts, "rebar " ++ atom_to_list(Name), "", []).
+
+help(Name, Providers) when is_list(Name) ->
+    help(list_to_atom(Name), Providers);
+help(Name, Providers) when is_atom(Name) ->
+    Provider = providers:get_provider(Name, Providers),
+    help(Provider).
 
 %% @doc format an error produced from a provider.
 -spec format_error(t(), Reason::term()) -> iolist().
