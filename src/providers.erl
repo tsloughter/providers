@@ -5,6 +5,7 @@
          new/2,
          do/2,
          impl/1,
+         process_deps/2,
          get_provider/2,
          get_provider_by_module/2,
          get_target_providers/2,
