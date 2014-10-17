@@ -156,21 +156,21 @@ get_target_providers(Target, Providers) ->
                                    end, Providers),
     process_deps(TargetProviders, Providers).
 
--spec get_provider(atom(), [t()]) -> t().
+-spec get_provider(atom(), [t()]) -> t() | not_found.
 get_provider(ProviderName, [Provider = #provider{name = ProviderName} | _]) ->
     Provider;
 get_provider(ProviderName, [_ | Rest]) ->
     get_provider(ProviderName, Rest);
 get_provider(_ProviderName, _) ->
-    [].
+    not_found.
 
--spec get_provider_by_module(atom(), [t()]) -> t().
+-spec get_provider_by_module(atom(), [t()]) -> t() | not_found.
 get_provider_by_module(ProviderModule, [Provider = #provider{module = ProviderModule} | _]) ->
     Provider;
 get_provider_by_module(ProviderModule, [_ | Rest]) ->
     get_provider_by_module(ProviderModule, Rest);
 get_provider_by_module(_ProviderModule, _) ->
-    [].
+    not_found.
 
 process_deps([], _Providers) ->
     [];
