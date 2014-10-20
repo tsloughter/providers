@@ -11,8 +11,7 @@
 -spec behaviour_info(atom()) -> [{atom(), arity()}] | undefined.
 behaviour_info(callbacks) ->
     [{init, 1},
-     {do, 1},
-     {format_error, 1}];
+     {do, 1}];
 behaviour_info(_) ->
     undefined.
 
