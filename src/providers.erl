@@ -34,7 +34,7 @@
                      example       :: string() | undefined, % An example of the task usage
                      opts          :: list() }).            % The list of options that the task requires/understands
 
--type t() :: record(provider).
+-type t() :: #provider{}.
 
 %%%===================================================================
 %%% API
