@@ -10,16 +10,16 @@
 
 -spec behaviour_info(atom()) -> [{atom(), arity()}] | undefined.
 behaviour_info(callbacks) ->
-	[{init, 1},
-	 {do, 1},
-	 {format_error, 2}];
+    [{init, 1},
+     {do, 1},
+     {format_error, 1}];
 behaviour_info(_) ->
-	undefined.
+    undefined.
 
 -else.
 
 -callback init(any()) -> {ok, any()}.
 -callback do(any()) ->  {ok, any()} | {error, string()} | {error, {module(), any()}}.
--callback format_error(any(), any()) ->  {iolist(), any()} | iolist().
+-callback format_error(any()) ->  iolist().
 
 -endif.
