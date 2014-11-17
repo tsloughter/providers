@@ -2,7 +2,7 @@
 
 -export([]).
 
--ifdef(have_callback_support).
+-ifndef(have_callback_support).
 
 %% In the case where R14 or lower is being used to compile the system
 %% we need to export a behaviour info
