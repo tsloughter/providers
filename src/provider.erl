@@ -19,7 +19,7 @@ behaviour_info(_) ->
 -else.
 
 -callback init(any()) -> {ok, any()}.
--callback do(any()) ->  {ok, any()} | {error, string()} | {error, {module(), any()}}.
--callback format_error(any()) ->  iolist().
+-callback do(any()) -> {ok, any()} | {error, string()} | {error, {module(), any()}}.
+-callback format_error(any()) -> iolist().
 
 -endif.
