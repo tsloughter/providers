@@ -34,7 +34,7 @@
                      short_desc    :: string(),             % A one line short description of the task
                      example       :: string() | undefined, % An example of the task usage
                      opts          :: list(),               % The list of options that the task requires/understands
-                     profiles      :: list()                % Profile to use for provider
+                     profile       :: atom()                % Profile to use for provider
                    }).
 
 -type t() :: #provider{}.
