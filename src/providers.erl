@@ -4,6 +4,7 @@
 -export([create/1,
          new/2,
          do/2,
+         profiles/1,
          impl/1,
          opts/1,
          desc/1,
@@ -32,7 +33,9 @@
                      desc          :: string(),             % The description for the task
                      short_desc    :: string(),             % A one line short description of the task
                      example       :: string() | undefined, % An example of the task usage
-                     opts          :: list() }).            % The list of options that the task requires/understands
+                     opts          :: list(),               % The list of options that the task requires/understands
+                     profiles      :: list()                % Profile to use for provider
+                   }).
 
 -type t() :: #provider{}.
 
@@ -64,7 +67,8 @@ create(Attrs) ->
              , desc          = proplists:get_value(desc, Attrs, "")
              , short_desc    = proplists:get_value(short_desc, Attrs, "")
              , example       = proplists:get_value(example, Attrs, "")
-             , opts          = proplists:get_value(opts, Attrs, []) }.
+             , opts          = proplists:get_value(opts, Attrs, [])
+             , profiles      = proplists:get_value(profiles, Attrs, []) }.
 
 %% @doc Run provider and hooks.
 %%
@@ -85,6 +89,10 @@ run_all([Provider | Rest], State) ->
         {error, Error} ->
             {error, Error}
     end.
+
+-spec profiles(t()) -> [atom()].
+profiles(Provider) ->
+    Provider#provider.profiles.
 
 %%% @doc get the name of the module that implements the provider
 %%% @param Provider the provider object
