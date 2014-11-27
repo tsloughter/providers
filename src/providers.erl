@@ -4,7 +4,7 @@
 -export([create/1,
          new/2,
          do/2,
-         profiles/1,
+         profile/1,
          impl/1,
          opts/1,
          desc/1,
@@ -68,7 +68,7 @@ create(Attrs) ->
              , short_desc    = proplists:get_value(short_desc, Attrs, "")
              , example       = proplists:get_value(example, Attrs, "")
              , opts          = proplists:get_value(opts, Attrs, [])
-             , profiles      = proplists:get_value(profiles, Attrs, []) }.
+             , profile       = proplists:get_value(profile, Attrs, default) }.
 
 %% @doc Run provider and hooks.
 %%
@@ -90,9 +90,9 @@ run_all([Provider | Rest], State) ->
             {error, Error}
     end.
 
--spec profiles(t()) -> [atom()].
-profiles(Provider) ->
-    Provider#provider.profiles.
+-spec profile(t()) -> [atom()].
+profile(Provider) ->
+    Provider#provider.profile.
 
 %%% @doc get the name of the module that implements the provider
 %%% @param Provider the provider object
