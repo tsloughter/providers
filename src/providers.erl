@@ -131,11 +131,17 @@ help(#provider{opts=Opts
               ,name=Name}) ->
     case Desc of
         Desc when length(Desc) > 0 ->
-            io:format(Desc++"~n~n");
+            io:format(Desc++"~n");
         _ ->
             ok
     end,
-    getopt:usage(Opts, "rebar " ++ atom_to_list(Name), "", []).
+
+    case Opts of
+        [] ->
+            io:format("Usage: rebar ~p~n", [Name]);
+        _ ->
+            getopt:usage(Opts, "rebar " ++ atom_to_list(Name), "", [])
+    end.
 
 help(Name, Providers) when is_list(Name) ->
     help(list_to_atom(Name), Providers);
@@ -164,7 +170,9 @@ get_target_providers(Target, Providers) ->
                                    end, Providers),
     process_deps(TargetProviders, Providers).
 
--spec get_provider(atom(), [t()]) -> t() | not_found.
+-spec get_provider({atom(), atom()} | atom(), [t()]) -> t() | not_found.
+get_provider({ProviderName, _Profile}, Providers) ->
+    get_provider(ProviderName, Providers);
 get_provider(ProviderName, [Provider = #provider{name = ProviderName} | _]) ->
     Provider;
 get_provider(ProviderName, [_ | Rest]) ->
@@ -188,7 +196,7 @@ process_deps(TargetProviders, Providers) ->
                                      DC
                              end, TargetProviders),
     ['NONE' | Rest] =
-        reorder_providers(lists:flatten([{'NONE', P#provider.name} || P <- TargetProviders] ++ DepChain)),
+        reorder_providers(lists:flatten([{'NONE', {P#provider.name, P#provider.profile}} || P <- TargetProviders] ++ DepChain)),
     Rest.
 
 process_deps(Provider, Providers, Seen) ->
@@ -197,20 +205,25 @@ process_deps(Provider, Providers, Seen) ->
             {[], Providers, Seen};
         false ->
             Deps = Provider#provider.deps,
-            DepList = lists:map(fun(Dep) ->
-                                        {Dep, Provider#provider.name}
+            Profile = Provider#provider.profile,
+            DepList = lists:map(fun({Dep, P}) ->
+                                        {{Dep, P}, {Provider#provider.name, Profile}};
+                                   (Dep) ->
+                                        {{Dep, Profile}, {Provider#provider.name, Profile}}
                                 end, Deps),
             {NewDeps, _, NewSeen} =
-                lists:foldl(fun(Arg, Acc) ->
-                                    process_dep(Arg, Acc)
+                lists:foldl(fun({Arg, P}, Acc) ->
+                                    process_dep({Arg, P}, Acc);
+                                (Arg, Acc) ->
+                                    process_dep({Arg, Profile}, Acc)
                             end,
                            {[], Providers, Seen}, Deps),
             {[DepList | NewDeps], Providers, NewSeen}
     end.
 
-process_dep(ProviderName, {Deps, Providers, Seen}) ->
+process_dep({ProviderName, Profile}, {Deps, Providers, Seen}) ->
     Provider = get_provider(ProviderName, Providers),
-    {NewDeps, _, NewSeen} = process_deps(Provider, Providers, [ProviderName | Seen]),
+    {NewDeps, _, NewSeen} = process_deps(Provider#provider{profile=Profile}, Providers, [ProviderName | Seen]),
     {[Deps | NewDeps], Providers, NewSeen}.
 
 %% @doc Reorder the providers according to thier dependency set.
