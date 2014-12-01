@@ -38,8 +38,8 @@
 %%====================================================================
 %% Types
 %%====================================================================
--type pair() :: {DependentApp::atom(), PrimaryApp::atom()}.
--type name() :: AppName::atom().
+-type pair() :: {{atom(), atom()}, {atom(), atom()}}.
+-type name() :: {atom(), atom()}.
 -type element() :: name() | pair().
 
 %%====================================================================
@@ -47,7 +47,7 @@
 %%====================================================================
 
 %% @doc Do a topological sort on the list of pairs.
--spec sort([pair()]) -> {ok, [atom()]} | {error, any()}.
+-spec sort([pair()]) -> {ok, [{atom(), atom()}]} | {error, any()}.
 sort(Pairs) ->
     iterate(Pairs, [], all(Pairs)).
 
@@ -68,15 +68,15 @@ iterate(Pairs, L, All) ->
             iterate(remove_pairs(Lhs, Pairs), L ++ Lhs, All)
     end.
 
--spec all([pair()]) -> [atom()].
+-spec all([pair()]) -> [{atom(), atom()}].
 all(L) ->
     lhs(L) ++ rhs(L).
 
--spec lhs([pair()]) -> [atom()].
+-spec lhs([pair()]) -> [{atom(), atom()}].
 lhs(L) ->
     [X || {X, _} <- L].
 
--spec rhs([pair()]) -> [atom()].
+-spec rhs([pair()]) -> [{atom(), atom()}].
 rhs(L) ->
     [Y || {_, Y} <- L].
 
@@ -104,35 +104,6 @@ remove_duplicates([]) ->
 %%
 %%   L2' L1 = [X] L2 = [{X,Y}].
 %% @private
--spec remove_pairs([atom()], [pair()]) -> [pair()].
+-spec remove_pairs([{atom(), atom()}], [pair()]) -> [pair()].
 remove_pairs(L1, L2) ->
     [All || All={X, _Y} <- L2, not lists:member(X, L1)].
-
-%%====================================================================
-%% Tests
-%%====================================================================
--ifndef(NOTEST).
--include_lib("eunit/include/eunit.hrl").
-
-topo_1_test() ->
-    Pairs = [{one,two},{two,four},{four,six},
-             {two,ten},{four,eight},
-             {six,three},{one,three},
-             {three,five},{five,eight},
-             {seven,five},{seven,nine},
-             {nine,four},{nine,ten}],
-    ?assertMatch({ok, [one,seven,two,nine,four,six,three,five,eight,ten]},
-                 sort(Pairs)).
-topo_2_test() ->
-    Pairs = [{app2, app1}, {zapp1, app1}, {stdlib, app1},
-             {app3, app2}, {kernel, app1}, {kernel, app3},
-             {app2, zapp1}, {app3, zapp1}, {zapp2, zapp1}],
-    ?assertMatch({ok, [stdlib, kernel, zapp2,
-                       app3, app2, zapp1, app1]},
-                 sort(Pairs)).
-
-topo_pairs_cycle_test() ->
-    Pairs = [{app2, app1}, {app1, app2}, {stdlib, app1}],
-    ?assertMatch({error, _}, sort(Pairs)).
-
--endif.

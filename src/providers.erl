@@ -162,6 +162,7 @@ format_error(#provider{module=Mod}, Error) ->
 format(#provider{name=Name}) ->
     atom_to_list(Name).
 
+-spec get_target_providers(atom(), list()) -> [{atom(), atom()}].
 get_target_providers(Target, Providers) ->
     TargetProviders = lists:filter(fun(#provider{name=T}) when T =:= Target->
                                            true;
@@ -195,9 +196,15 @@ process_deps(TargetProviders, Providers) ->
                                      {DC, _, _} = process_deps(Provider, Providers, []),
                                      DC
                              end, TargetProviders),
-    ['NONE' | Rest] =
-        reorder_providers(lists:flatten([{'NONE', {P#provider.name, P#provider.profile}} || P <- TargetProviders] ++ DepChain)),
-    Rest.
+    Providers1 = lists:flatten([{{none, none},
+                               {P#provider.name, P#provider.profile}} || P <- TargetProviders]
+                             ++ DepChain),
+    case reorder_providers(Providers1) of
+        {error, _}=Error ->
+            Error;
+        [{none, none} | Rest] ->
+            Rest
+    end.
 
 process_deps(Provider, Providers, Seen) ->
     case lists:member(Provider, Seen) of
