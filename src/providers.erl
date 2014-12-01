@@ -231,6 +231,6 @@ reorder_providers(OProviderList) ->
     case providers_topo:sort(OProviderList) of
         {ok, ProviderList} ->
             ProviderList;
-        {error, {cycle, _}} ->
+        {error, _} ->
             {error, "There was a cycle in the provider list. Unable to complete build!"}
     end.

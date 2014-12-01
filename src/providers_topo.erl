@@ -133,7 +133,6 @@ topo_2_test() ->
 
 topo_pairs_cycle_test() ->
     Pairs = [{app2, app1}, {app1, app2}, {stdlib, app1}],
-    ?assertMatch({error, {_, {cycle, [{app2, app1}, {app1, app2}]}}},
-                 sort(Pairs)).
+    ?assertMatch({error, _}, sort(Pairs)).
 
 -endif.
