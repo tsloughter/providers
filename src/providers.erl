@@ -90,7 +90,7 @@ run_all([Provider | Rest], State) ->
             {error, Error}
     end.
 
--spec profile(t()) -> [atom()].
+-spec profile(t()) -> atom().
 profile(Provider) ->
     Provider#provider.profile.
 
