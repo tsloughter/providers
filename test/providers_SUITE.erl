@@ -62,6 +62,10 @@ namespaces(_Config) ->
                  providers:get_target_providers(d, Providers, ns)),
     ?assertEqual([{default,a},{ns,a},{default,b},{ns,c},{ns,d}],
                  providers:get_target_providers({ns,d}, Providers)),
+    ?assertEqual([DA,DB,DD],
+                 providers:get_providers_by_namespace(default,Providers)),
+    ?assertEqual([NSA,NSC,NSD],
+                 providers:get_providers_by_namespace(ns,Providers)),
     ok.
 
 make_providers(Proplists) ->

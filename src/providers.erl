@@ -13,6 +13,7 @@
          get_provider/2,
          get_provider/3,
          get_provider_by_module/2,
+         get_providers_by_namespace/2,
          get_target_providers/2,
          get_target_providers/3,
          hooks/1,
@@ -215,6 +216,14 @@ get_provider_by_module(ProviderModule, [_ | Rest]) ->
     get_provider_by_module(ProviderModule, Rest);
 get_provider_by_module(_ProviderModule, _) ->
     not_found.
+
+-spec get_providers_by_namespace(atom(), [t()]) -> t() | not_found.
+get_providers_by_namespace(Namespace, [Provider = #provider{namespace = Namespace} | Rest]) ->
+    [Provider | get_providers_by_namespace(Namespace, Rest)];
+get_providers_by_namespace(Namespace, [_ | Rest]) ->
+    get_providers_by_namespace(Namespace, Rest);
+get_providers_by_namespace(_Namespace, []) ->
+    [].
 
 process_deps([], _Providers) ->
     [];
