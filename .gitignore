@@ -13,3 +13,4 @@ erl_crash.dump
 .rebar
 _rel
 logs
+*.swp
