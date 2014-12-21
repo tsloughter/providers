@@ -5,17 +5,21 @@
          new/2,
          do/2,
          profile/1,
+         namespace/1,
          impl/1,
          opts/1,
          desc/1,
          process_deps/2,
          get_provider/2,
+         get_provider/3,
          get_provider_by_module/2,
          get_target_providers/2,
+         get_target_providers/3,
          hooks/1,
          hooks/2,
          help/1,
          help/2,
+         help/3,
          format_error/2,
          format/1]).
 
@@ -25,16 +29,17 @@
 %%% Types
 %%%===================================================================
 
--record(provider,  { name          :: atom(),               % The 'user friendly' name of the task
-                     module        :: module(),             % The module implementation of the task
-                     hooks         :: {list(), list()},
-                     bare          :: boolean(),            % Indicates whether task can be run by user
-                     deps          :: [atom()],             % The list of dependencies
-                     desc          :: string(),             % The description for the task
-                     short_desc    :: string(),             % A one line short description of the task
-                     example       :: string() | undefined, % An example of the task usage
-                     opts          :: list(),               % The list of options that the task requires/understands
-                     profile       :: atom()                % Profile to use for provider
+-record(provider,  { name              :: atom(),               % The 'user friendly' name of the task
+                     module            :: module(),             % The module implementation of the task
+                     hooks             :: {list(), list()},
+                     bare              :: boolean(),            % Indicates whether task can be run by user
+                     deps              :: [atom()],             % The list of dependencies
+                     desc              :: string(),             % The description for the task
+                     short_desc        :: string(),             % A one line short description of the task
+                     example           :: string() | undefined, % An example of the task usage
+                     opts              :: list(),               % The list of options that the task requires/understands
+                     profile           :: atom(),               % Profile to use for provider
+                     namespace=default :: atom()                % namespace the provider is registered in
                    }).
 
 -type t() :: #provider{}.
@@ -68,7 +73,8 @@ create(Attrs) ->
              , short_desc    = proplists:get_value(short_desc, Attrs, "")
              , example       = proplists:get_value(example, Attrs, "")
              , opts          = proplists:get_value(opts, Attrs, [])
-             , profile       = proplists:get_value(profile, Attrs, default) }.
+             , profile       = proplists:get_value(profile, Attrs, default)
+             , namespace     = proplists:get_value(namespace, Attrs, default) }.
 
 %% @doc Run provider and hooks.
 %%
@@ -93,6 +99,10 @@ run_all([Provider | Rest], State) ->
 -spec profile(t()) -> atom().
 profile(Provider) ->
     Provider#provider.profile.
+
+-spec namespace(t()) -> atom().
+namespace(Provider) ->
+    Provider#provider.namespace.
 
 %%% @doc get the name of the module that implements the provider
 %%% @param Provider the provider object
@@ -144,9 +154,14 @@ help(#provider{opts=Opts
     end.
 
 help(Name, Providers) when is_list(Name) ->
-    help(list_to_atom(Name), Providers);
+    help(list_to_atom(Name), Providers, default);
 help(Name, Providers) when is_atom(Name) ->
-    Provider = providers:get_provider(Name, Providers),
+    help(Name, Providers, default).
+
+help(Name, Providers, Namespace) when is_list(Name) ->
+    help(list_to_atom(Name), Providers, Namespace);
+help(Name, Providers, Namespace) when is_atom(Name) ->
+    Provider = providers:get_provider(Name, Providers, Namespace),
     help(Provider).
 
 %% @doc format an error produced from a provider.
@@ -162,23 +177,35 @@ format_error(#provider{module=Mod}, Error) ->
 format(#provider{name=Name}) ->
     atom_to_list(Name).
 
--spec get_target_providers(atom(), list()) -> [{atom(), atom()}].
+-spec get_target_providers({atom(),atom()} | atom(), list()) -> [{atom(), atom()}].
+get_target_providers({Namespace, Target}, Providers) ->
+    get_target_providers(Target, Providers, Namespace);
 get_target_providers(Target, Providers) ->
-    TargetProviders = lists:filter(fun(#provider{name=T}) when T =:= Target->
+    get_target_providers(Target, Providers, default).
+
+get_target_providers(Target, Providers, Namespace) ->
+    TargetProviders = lists:filter(fun(#provider{name=T, namespace=NS})
+                                         when T =:= Target, NS =:= Namespace ->
                                            true;
                                       (_) ->
                                            false
                                    end, Providers),
     process_deps(TargetProviders, Providers).
 
--spec get_provider({atom(), atom()} | atom(), [t()]) -> t() | not_found.
-get_provider({ProviderName, _Profile}, Providers) ->
-    get_provider(ProviderName, Providers);
-get_provider(ProviderName, [Provider = #provider{name = ProviderName} | _]) ->
+-spec get_provider(atom() | {atom(), atom()}, [t()]) -> t() | not_found.
+get_provider({Namespace, ProviderName}, Providers) ->
+    get_provider(ProviderName, Providers, Namespace);
+get_provider(ProviderName, Providers) ->
+    get_provider(ProviderName, Providers, default).
+
+-spec get_provider(atom(), [t()], atom()) -> t() | not_found.
+get_provider(ProviderName,
+             [Provider = #provider{name = ProviderName, namespace=Namespace} | _],
+             Namespace) ->
     Provider;
-get_provider(ProviderName, [_ | Rest]) ->
-    get_provider(ProviderName, Rest);
-get_provider(_ProviderName, _) ->
+get_provider(ProviderName, [_ | Rest], Namespace) ->
+    get_provider(ProviderName, Rest, Namespace);
+get_provider(_, _, _) ->
     not_found.
 
 -spec get_provider_by_module(atom(), [t()]) -> t() | not_found.
@@ -197,7 +224,7 @@ process_deps(TargetProviders, Providers) ->
                                      DC
                              end, TargetProviders),
     Providers1 = lists:flatten([{{none, none},
-                               {P#provider.name, P#provider.profile}} || P <- TargetProviders]
+                               {P#provider.namespace, P#provider.name}} || P <- TargetProviders]
                              ++ DepChain),
     case reorder_providers(Providers1) of
         {error, _}=Error ->
@@ -212,25 +239,25 @@ process_deps(Provider, Providers, Seen) ->
             {[], Providers, Seen};
         false ->
             Deps = Provider#provider.deps,
-            Profile = Provider#provider.profile,
-            DepList = lists:map(fun({Dep, P}) ->
-                                        {{Dep, P}, {Provider#provider.name, Profile}};
+            Namespace = Provider#provider.namespace,
+            DepList = lists:map(fun({NS, Dep}) ->
+                                        {{NS, Dep}, {Namespace, Provider#provider.name}};
                                    (Dep) ->
-                                        {{Dep, Profile}, {Provider#provider.name, Profile}}
+                                        {{Namespace, Dep}, {Namespace, Provider#provider.name}}
                                 end, Deps),
             {NewDeps, _, NewSeen} =
-                lists:foldl(fun({Arg, P}, Acc) ->
-                                    process_dep({Arg, P}, Acc);
+                lists:foldl(fun({NS, Arg}, Acc) ->
+                                    process_dep({NS, Arg}, Acc);
                                 (Arg, Acc) ->
-                                    process_dep({Arg, Profile}, Acc)
+                                    process_dep({Namespace, Arg}, Acc)
                             end,
                            {[], Providers, Seen}, Deps),
             {[DepList | NewDeps], Providers, NewSeen}
     end.
 
-process_dep({ProviderName, Profile}, {Deps, Providers, Seen}) ->
-    Provider = get_provider(ProviderName, Providers),
-    {NewDeps, _, NewSeen} = process_deps(Provider#provider{profile=Profile}, Providers, [ProviderName | Seen]),
+process_dep({Namespace, ProviderName}, {Deps, Providers, Seen}) ->
+    Provider = get_provider(ProviderName, Providers, Namespace),
+    {NewDeps, _, NewSeen} = process_deps(Provider#provider{namespace=Namespace}, Providers, [ProviderName | Seen]),
     {[Deps | NewDeps], Providers, NewSeen}.
 
 %% @doc Reorder the providers according to thier dependency set.
