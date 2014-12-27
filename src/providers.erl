@@ -128,15 +128,20 @@ hooks(Provider, Hooks) ->
     Provider#provider{hooks=Hooks}.
 
 help(Providers) when is_list(Providers) ->
-    Help = lists:sort([{ec_cnv:to_list(P#provider.name), P#provider.short_desc} || P <- Providers,
-                                                                                   P#provider.bare =/= true]),
-    Longest = lists:max([length(X) || {X, _} <- Help]),
-
-    lists:foreach(fun({Name, ShortDesc}) ->
-                          Length = length(Name),
-                          Spacing = lists:duplicate(Longest - Length + 8, " "),
-                          io:format("~s~s~s~n", [Name, Spacing, ShortDesc])
-                  end, Help);
+    Dict = lists:foldl(
+        fun(P, Dict) when P#provider.bare =/= true ->
+            dict:append(P#provider.namespace,
+                        {ec_cnv:to_list(P#provider.name),
+                         P#provider.short_desc},
+                        Dict)
+        ;  (_, Dict) -> Dict
+        end,
+        dict:new(),
+        Providers),
+    Namespaces = [default |
+                 lists:usort([NS || #provider{namespace=NS} <- Providers,
+                                    NS =/= default])],
+    namespace_help(Dict, Namespaces);
 help(#provider{opts=Opts
               ,desc=Desc
               ,name=Name}) ->
@@ -277,3 +282,23 @@ reorder_providers(OProviderList) ->
         {error, _} ->
             {error, "There was a cycle in the provider list. Unable to complete build!"}
     end.
+
+%% @doc Extract help values from a list on a per-namespace order
+namespace_help(_, []) -> ok;
+namespace_help(Dict, [NS|Namespaces]) ->
+    case NS of
+        default -> ok;
+        _ -> io:format("~n~p <task>:~n", [NS])
+    end,
+    Help = [case NS of
+                default -> {Name, Desc};
+                _ -> {"  "++Name, Desc}
+            end || {Name, Desc} <- lists:sort(dict:fetch(NS,Dict))],
+    Longest = lists:max([length(X) || {X, _} <- Help]),
+
+    lists:foreach(fun({Name, ShortDesc}) ->
+                          Length = length(Name),
+                          Spacing = lists:duplicate(Longest - Length + 8, " "),
+                          io:format("~s~s~s~n", [Name, Spacing, ShortDesc])
+                  end, Help),
+    namespace_help(Dict, Namespaces).
