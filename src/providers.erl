@@ -83,19 +83,7 @@ create(Attrs) ->
 %% @param State the current state of the system
 -spec do(t(), any()) -> {ok, any()} | {error, string()}.
 do(Provider, State) ->
-    {PreHooks, PostHooks} = Provider#provider.hooks,
-    run_all([PreHooks++Provider | PostHooks], State).
-
--spec run_all([t()], any()) -> {ok, any()} | {error, string()}.
-run_all([], State) ->
-    {ok, State};
-run_all([Provider | Rest], State) ->
-    case (Provider#provider.module):do(State) of
-        {ok, State1} ->
-            run_all(Rest, State1);
-        {error, Error} ->
-            {error, Error}
-    end.
+    (Provider#provider.module):do(State).
 
 -spec profiles(t()) -> [atom()].
 profiles(Provider) ->
@@ -196,7 +184,13 @@ get_target_providers(Target, Providers, Namespace) ->
                                       (_) ->
                                            false
                                    end, Providers),
-    process_deps(TargetProviders, Providers).
+    expand_hooks(process_deps(TargetProviders, Providers), [], Providers, Namespace).
+
+expand_hooks([], TargetProviders, _Providers, _Namespace) ->
+    TargetProviders;
+expand_hooks([{_, Provider} | Tail], TargetProviders, Providers, Namespace) ->
+    {PreHooks, PostHooks} = hooks(get_provider(Provider, Providers, Namespace)),
+    expand_hooks(Tail, TargetProviders++PreHooks++[Provider | PostHooks], Providers, Namespace).
 
 -spec get_provider(atom() | {atom(), atom()}, [t()]) -> t() | not_found.
 get_provider({Namespace, ProviderName}, Providers) ->
