@@ -4,7 +4,7 @@
 -export([create/1,
          new/2,
          do/2,
-         profile/1,
+         profiles/1,
          namespace/1,
          impl/1,
          opts/1,
@@ -39,7 +39,7 @@
                      short_desc        :: string(),             % A one line short description of the task
                      example           :: string() | undefined, % An example of the task usage
                      opts              :: list(),               % The list of options that the task requires/understands
-                     profile           :: atom(),               % Profile to use for provider
+                     profiles          :: [atom()],               % Profile to use for provider
                      namespace=default :: atom()                % namespace the provider is registered in
                    }).
 
@@ -74,7 +74,7 @@ create(Attrs) ->
              , short_desc    = proplists:get_value(short_desc, Attrs, "")
              , example       = proplists:get_value(example, Attrs, "")
              , opts          = proplists:get_value(opts, Attrs, [])
-             , profile       = proplists:get_value(profile, Attrs, default)
+             , profiles      = proplists:get_value(profiles, Attrs, [default])
              , namespace     = proplists:get_value(namespace, Attrs, default) }.
 
 %% @doc Run provider and hooks.
@@ -97,9 +97,9 @@ run_all([Provider | Rest], State) ->
             {error, Error}
     end.
 
--spec profile(t()) -> atom().
-profile(Provider) ->
-    Provider#provider.profile.
+-spec profiles(t()) -> [atom()].
+profiles(Provider) ->
+    Provider#provider.profiles.
 
 -spec namespace(t()) -> atom().
 namespace(Provider) ->
