@@ -184,13 +184,13 @@ get_target_providers(Target, Providers, Namespace) ->
                                       (_) ->
                                            false
                                    end, Providers),
-    expand_hooks(process_deps(TargetProviders, Providers), [], Providers, Namespace).
+    expand_hooks(process_deps(TargetProviders, Providers), [], Providers).
 
-expand_hooks([], TargetProviders, _Providers, _Namespace) ->
+expand_hooks([], TargetProviders, _Providers) ->
     TargetProviders;
-expand_hooks([{_, Provider} | Tail], TargetProviders, Providers, Namespace) ->
-    {PreHooks, PostHooks} = hooks(get_provider(Provider, Providers, Namespace)),
-    expand_hooks(Tail, TargetProviders++PreHooks++[Provider | PostHooks], Providers, Namespace).
+expand_hooks([Provider | Tail], TargetProviders, Providers) ->
+    {PreHooks, PostHooks} = hooks(get_provider(Provider, Providers)),
+    expand_hooks(Tail, TargetProviders++PreHooks++[Provider | PostHooks], Providers).
 
 -spec get_provider(atom() | {atom(), atom()}, [t()]) -> t() | not_found.
 get_provider({Namespace, ProviderName}, Providers) ->
