@@ -132,6 +132,7 @@ help(Providers) when is_list(Providers) ->
     namespace_help(Dict, Namespaces);
 help(#provider{opts=Opts
               ,desc=Desc
+              ,namespace=Namespace
               ,name=Name}) ->
     case Desc of
         Desc when length(Desc) > 0 ->
@@ -140,11 +141,16 @@ help(#provider{opts=Opts
             ok
     end,
 
+    StrNS = case Namespace of
+        default -> "";
+        _ -> atom_to_list(Namespace) ++ " "
+    end,
+
     case Opts of
         [] ->
-            io:format("Usage: rebar ~p~n", [Name]);
+            io:format("Usage: rebar3 ~s~p~n", [StrNS, Name]);
         _ ->
-            getopt:usage(Opts, "rebar " ++ atom_to_list(Name), "", [])
+            getopt:usage(Opts, "rebar3 " ++ StrNS ++ atom_to_list(Name), "", [])
     end.
 
 help(Name, Providers) when is_list(Name) ->
