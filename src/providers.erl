@@ -68,7 +68,7 @@ create(Attrs) ->
     #provider{ name          = proplists:get_value(name, Attrs, undefined)
              , module        = proplists:get_value(module, Attrs, undefined)
              , hooks         = proplists:get_value(hooks, Attrs, {[], []})
-             , bare          = proplists:get_value(bare, Attrs, false)
+             , bare          = proplists:get_value(bare, Attrs, true)
              , deps          = proplists:get_value(deps, Attrs, [])
              , desc          = proplists:get_value(desc, Attrs, "")
              , short_desc    = proplists:get_value(short_desc, Attrs, "")
@@ -117,7 +117,7 @@ hooks(Provider, Hooks) ->
 
 help(Providers) when is_list(Providers) ->
     Dict = lists:foldl(
-        fun(P, Dict) when P#provider.bare =/= true ->
+        fun(P, Dict) when P#provider.bare =:= true ->
             dict:append(P#provider.namespace,
                         {ec_cnv:to_list(P#provider.name),
                          P#provider.short_desc},
@@ -286,19 +286,28 @@ reorder_providers(OProviderList) ->
 %% @doc Extract help values from a list on a per-namespace order
 namespace_help(_, []) -> ok;
 namespace_help(Dict, [NS|Namespaces]) ->
-    case NS of
-        default -> ok;
-        _ -> io:format("~n~p <task>:~n", [NS])
+    Providers = case dict:find(NS, Dict) of
+        {ok, Found} -> Found;
+        error -> []
     end,
     Help = [case NS of
                 default -> {Name, Desc};
                 _ -> {"  "++Name, Desc}
-            end || {Name, Desc} <- lists:sort(dict:fetch(NS,Dict))],
-    Longest = lists:max([length(X) || {X, _} <- Help]),
-
-    lists:foreach(fun({Name, ShortDesc}) ->
-                          Length = length(Name),
-                          Spacing = lists:duplicate(Longest - Length + 8, " "),
-                          io:format("~s~s~s~n", [Name, Spacing, ShortDesc])
-                  end, Help),
+            end || {Name, Desc} <- lists:sort(Providers)],
+    if Help =:= [] ->
+            no_public_providers;
+       NS =/= default ->
+            io:format("~n~p <task>:~n", [NS]),
+            display_help(Help);
+       NS =:= default ->
+            display_help(Help)
+    end,
     namespace_help(Dict, Namespaces).
+
+display_help(Help) ->
+    Longest = lists:max([length(X) || {X, _} <- Help]),
+    lists:foreach(fun({Name, ShortDesc}) ->
+                Length = length(Name),
+                Spacing = lists:duplicate(Longest - Length + 8, " "),
+                io:format("~s~s~s~n", [Name, Spacing, ShortDesc])
+        end, Help).
