@@ -68,7 +68,7 @@ create(Attrs) ->
     #provider{ name          = proplists:get_value(name, Attrs, undefined)
              , module        = proplists:get_value(module, Attrs, undefined)
              , hooks         = proplists:get_value(hooks, Attrs, {[], []})
-             , bare          = proplists:get_value(bare, Attrs, false)
+             , bare          = proplists:get_value(bare, Attrs, true)
              , deps          = proplists:get_value(deps, Attrs, [])
              , desc          = proplists:get_value(desc, Attrs, "")
              , short_desc    = proplists:get_value(short_desc, Attrs, "")
@@ -117,7 +117,7 @@ hooks(Provider, Hooks) ->
 
 help(Providers) when is_list(Providers) ->
     Dict = lists:foldl(
-        fun(P, Dict) when P#provider.bare =/= true ->
+        fun(P, Dict) when P#provider.bare =:= true ->
             dict:append(P#provider.namespace,
                         {ec_cnv:to_list(P#provider.name),
                          P#provider.short_desc},
