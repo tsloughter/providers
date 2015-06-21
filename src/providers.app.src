@@ -1,12 +1,15 @@
 {application, providers,
  [
- {description, "providers"}
- ,{vsn, "0.1.0"}
+ {description, "Providers provider."}
+ ,{vsn, "1.4.1"}
  ,{registered, []}
  ,{applications,
    [kernel
    ,stdlib
    ,getopt
    ]}
- ,{env,[]}
+
+ ,{contributors, ["Tristan Sloughter"]}
+ ,{licenses, ["MIT"]}
+ ,{links, [{"Github", "https://github.com/tsloughter/providers"}]}
  ]}.

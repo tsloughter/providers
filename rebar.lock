@@ -1,4 +1,1 @@
-[{<<"getopt">>,[],
-  {git,"git@github.com:jcomellas/getopt.git",
-       "626698975e63866156159661d100785d65eab6f9"},
-  0}].
+[{<<"getopt">>,{pkg,<<"getopt">>,<<"0.8.2">>},0}].
