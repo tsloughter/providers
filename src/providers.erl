@@ -21,10 +21,13 @@
          help/1,
          help/2,
          help/3,
+         format_error/1,
          format_error/2,
          format/1]).
 
 -export_type([t/0]).
+
+-include("providers.hrl").
 
 %%%===================================================================
 %%% Types
@@ -81,7 +84,7 @@ create(Attrs) ->
 %%
 %% @param Provider the provider object
 %% @param State the current state of the system
--spec do(t(), any()) -> {ok, any()} | {error, string()}.
+-spec do(t(), any()) -> {ok, any()} | {error, string()} | {error, {module(), any()}}.
 do(Provider, State) ->
     (Provider#provider.module):do(State).
 
@@ -163,6 +166,9 @@ help(Name, Providers, Namespace) when is_list(Name) ->
 help(Name, Providers, Namespace) when is_atom(Name) ->
     Provider = providers:get_provider(Name, Providers, Namespace),
     help(Provider).
+
+format_error({provider_not_found, Namespace, ProviderName}) ->
+    io_lib:format("Unable to resolve provider ~s in namespace ~s", [ProviderName, Namespace]).
 
 %% @doc format an error produced from a provider.
 -spec format_error(t(), Reason::term()) -> iolist().
@@ -270,9 +276,13 @@ process_deps(Provider, Providers, Seen) ->
     end.
 
 process_dep({Namespace, ProviderName}, {Deps, Providers, Seen}) ->
-    Provider = get_provider(ProviderName, Providers, Namespace),
-    {NewDeps, _, NewSeen} = process_deps(Provider#provider{namespace=Namespace}, Providers, [ProviderName | Seen]),
-    {[Deps | NewDeps], Providers, NewSeen}.
+    case get_provider(ProviderName, Providers, Namespace) of
+        not_found ->
+            throw(?PRV_ERROR({provider_not_found, Namespace, ProviderName}));
+        Provider ->
+            {NewDeps, _, NewSeen} = process_deps(Provider#provider{namespace=Namespace}, Providers, [ProviderName | Seen]),
+            {[Deps | NewDeps], Providers, NewSeen}
+    end.
 
 %% @doc Reorder the providers according to thier dependency set.
 reorder_providers(OProviderList) ->
