@@ -6,6 +6,7 @@
          do/2,
          profiles/1,
          namespace/1,
+         module/1,
          impl/1,
          opts/1,
          desc/1,
@@ -97,8 +98,11 @@ namespace(Provider) ->
     Provider#provider.namespace.
 
 %%% @doc get the name of the module that implements the provider
-%%% @param Provider the provider object
--spec impl(t()) -> module().
+-spec module(t()) -> module().
+module(Provider) ->
+    Provider#provider.module.
+
+-spec impl(t()) -> atom().
 impl(Provider) ->
     Provider#provider.name.
 

@@ -9,7 +9,7 @@
    ,getopt
    ]}
 
- ,{contributors, ["Tristan Sloughter"]}
+ ,{maintainers, ["Tristan Sloughter"]}
  ,{licenses, ["MIT"]}
  ,{links, [{"Github", "https://github.com/tsloughter/providers"}]}
  ]}.
