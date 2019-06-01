@@ -1,6 +1,6 @@
 {application,providers,
              [{description,"Providers provider."},
-              {vsn,"1.7.0"},
+              {vsn,"1.8.0"},
               {registered,[]},
               {applications,[kernel,stdlib,getopt]},
               {maintainers,["Tristan Sloughter"]},
