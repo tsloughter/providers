@@ -3,6 +3,5 @@
               {vsn,"1.8.0"},
               {registered,[]},
               {applications,[kernel,stdlib,getopt]},
-              {maintainers,["Tristan Sloughter"]},
               {licenses,["Apache 2.0"]},
               {links,[{"Github","https://github.com/tsloughter/providers"}]}]}.
