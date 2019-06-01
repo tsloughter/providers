@@ -232,7 +232,7 @@ get_provider_by_module(ProviderModule, [_ | Rest]) ->
 get_provider_by_module(_ProviderModule, _) ->
     not_found.
 
--spec get_providers_by_namespace(atom(), [t()]) -> t() | not_found.
+-spec get_providers_by_namespace(atom(), [t()]) -> [t()].
 get_providers_by_namespace(Namespace, [Provider = #provider{namespace = Namespace} | Rest]) ->
     [Provider | get_providers_by_namespace(Namespace, Rest)];
 get_providers_by_namespace(Namespace, [_ | Rest]) ->
