@@ -1,6 +1,6 @@
 {application,providers,
              [{description,"Providers provider."},
-              {vsn,"1.8.0"},
+              {vsn,"1.8.1"},
               {registered,[]},
               {applications,[kernel,stdlib,getopt]},
               {licenses,["Apache 2.0"]},
