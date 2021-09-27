@@ -155,7 +155,7 @@ help(#provider{opts=Opts
 
     case Opts of
         [] ->
-            io:format("Usage: rebar3 ~s~p~n", [StrNS, Name]);
+            io:format("Usage: rebar3 ~ts~ts~n", [StrNS, Name]);
         _ ->
             getopt:usage(Opts, "rebar3 " ++ StrNS ++ atom_to_list(Name), "", [])
     end.
@@ -172,7 +172,7 @@ help(Name, Providers, Namespace) when is_atom(Name) ->
     help(Provider).
 
 format_error({provider_not_found, Namespace, ProviderName}) ->
-    io_lib:format("Unable to resolve provider ~s in namespace ~s", [ProviderName, Namespace]).
+    io_lib:format("Unable to resolve provider ~ts in namespace ~ts", [ProviderName, Namespace]).
 
 %% @doc format an error produced from a provider.
 -spec format_error(t(), Reason::term()) -> iolist().
@@ -311,7 +311,7 @@ namespace_help(Dict, [NS|Namespaces]) ->
     if Help =:= [] ->
             no_public_providers;
        NS =/= default ->
-            io:format("~n~p <task>:~n", [NS]),
+            io:format("~n~ts <task>:~n", [NS]),
             display_help(Help);
        NS =:= default ->
             display_help(Help)
@@ -323,5 +323,5 @@ display_help(Help) ->
     lists:foreach(fun({Name, ShortDesc}) ->
                 Length = length(Name),
                 Spacing = lists:duplicate(Longest - Length + 8, " "),
-                io:format("~s~s~s~n", [Name, Spacing, ShortDesc])
+                io:format("~ts~ts~ts~n", [Name, Spacing, ShortDesc])
         end, Help).
