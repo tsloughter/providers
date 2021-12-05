@@ -288,7 +288,7 @@ process_dep({Namespace, ProviderName}, {Deps, Providers, Seen}) ->
             {[Deps | NewDeps], Providers, NewSeen}
     end.
 
-%% @doc Reorder the providers according to thier dependency set.
+%% @doc Reorder the providers according to their dependency set.
 reorder_providers(OProviderList) ->
     case providers_topo:sort(OProviderList) of
         {ok, ProviderList} ->
